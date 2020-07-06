@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
-import { v4 as uuidv4 } from "uuid";
 import { BrowserRouter as Router, Route } from "react-router-dom";
+import axios from "axios";
 import { Row } from "reactstrap";
 
 import Button from "../../UI/Button/AddButton";
@@ -14,14 +14,25 @@ import classes from "./Desk.module.css";
 
 const Desk = () => {
   const [notes, setNotes] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/user/notes")
-      .then((res) => res.json())
-      .then((stickNotes) => setNotes(stickNotes));
+    getNotes();
   }, []);
 
-  const [showModal, setShowModal] = useState(false);
+  const getNotes = async () => {
+    try {
+      const res = await axios.get("/user/notes");
+      const newNotes = res.data;
+      console.log(newNotes);
+
+      setNotes(newNotes);
+      setIsLoading(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   let noteTitle = "";
   let noteText = "";
@@ -29,28 +40,32 @@ const Desk = () => {
   //Adds new note to notes array
   const addNoteHandler = (e) => {
     if (noteTitle && noteText) {
+      e.preventDefault();
+
+      axios.post("/addNote", {
+        title: noteTitle,
+        text: noteText,
+      });
+      getNotes();
+      toggleModalHandler();
+    } else {
+      return;
+    }
+  };
+
+  const removeNoteHandler = (e, noteId) => {
+    if (noteId) {
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          noteId: uuidv4(),
-          noteTitle: noteTitle,
-          noteText: noteText,
+          id: noteId,
         }),
       };
-
-      fetch("/user/addNote", requestOptions).then((res) => res.json());
+      fetch("/removeNote", requestOptions).then((res) => res.json());
 
       e.preventDefault();
-      setNotes(
-        notes.concat({
-          noteId: uuidv4(),
-          noteTitle: noteTitle,
-          noteText: noteText,
-        })
-      );
-      console.log(notes);
-      toggleModalHandler();
+      getNotes();
     } else {
       return;
     }
@@ -69,9 +84,15 @@ const Desk = () => {
     noteTitle = e.target.value;
   };
 
-  const stickyNotes = notes.map((note) => (
-    <Notes key={note.noteId} text={note.noteText} title={note.noteTitle} />
-  ));
+  // const stickyNotes = notes.map((note) => (
+  //   <Notes
+  //     key={note._id}
+  //     id={note._id}
+  //     text={note.noteText}
+  //     title={note.noteTitle}
+  //     removeNote={(e) => removeNoteHandler(e, note._id)}
+  //   />
+  // ));
 
   const modalForm = (
     <Modal
@@ -92,10 +113,13 @@ const Desk = () => {
         <div className={classes.Desk}>
           <Route path="/" exact>
             <h1>Home page</h1>
+            <h1>%REACT_APP_TEST_NAME%</h1>
           </Route>
           <Route path="/login" component={Login} />
           <Route path="/notes">
-            <Row>{stickyNotes}</Row>
+            <Row>
+              <Notes notes={notes} isLoading={isLoading} />
+            </Row>
             {modalForm}
             <Button addNote={toggleModalHandler} />
           </Route>
