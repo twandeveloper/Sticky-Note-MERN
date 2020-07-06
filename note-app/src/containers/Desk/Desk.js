@@ -84,15 +84,16 @@ const Desk = () => {
     noteTitle = e.target.value;
   };
 
-  // const stickyNotes = notes.map((note) => (
-  //   <Notes
-  //     key={note._id}
-  //     id={note._id}
-  //     text={note.noteText}
-  //     title={note.noteTitle}
-  //     removeNote={(e) => removeNoteHandler(e, note._id)}
-  //   />
-  // ));
+  const stickyNotes = notes.map((note) => (
+    <Notes
+      loading={isLoading}
+      key={note._id}
+      id={note._id}
+      text={note.noteText}
+      title={note.noteTitle}
+      removeNote={(e) => removeNoteHandler(e, note._id)}
+    />
+  ));
 
   const modalForm = (
     <Modal
@@ -113,13 +114,10 @@ const Desk = () => {
         <div className={classes.Desk}>
           <Route path="/" exact>
             <h1>Home page</h1>
-            <h1>%REACT_APP_TEST_NAME%</h1>
           </Route>
           <Route path="/login" component={Login} />
           <Route path="/notes">
-            <Row>
-              <Notes notes={notes} isLoading={isLoading} />
-            </Row>
+            <Row>{stickyNotes}</Row>
             {modalForm}
             <Button addNote={toggleModalHandler} />
           </Route>
