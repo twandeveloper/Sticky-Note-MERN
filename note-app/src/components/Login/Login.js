@@ -2,12 +2,13 @@ import React from "react";
 
 import classes from "./Login.module.css";
 
-import { Form, FormGroup, Label, Input } from "reactstrap";
+import { Form, FormGroup, Label, Input, Button } from "reactstrap";
 
 const Login = () => {
   return (
     <div className={classes.Login}>
-      <Form>
+      <h5 className={classes.welcome}>Welcome to the Sticky Note Web App</h5>
+      <Form className={classes.Form}>
         <FormGroup>
           <Label for="userName">UserName</Label>
           <Input
@@ -19,6 +20,12 @@ const Login = () => {
           <Label for="password">Password</Label>
           <Input type="password" name="password" id="password" />
         </FormGroup>
+        <Button color="primary" size="lg" block>
+          Login
+        </Button>
+        <Button color="danger" size="lg" block>
+          Sign Up
+        </Button>
       </Form>
     </div>
   );
