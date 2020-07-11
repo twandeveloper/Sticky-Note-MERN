@@ -18,7 +18,12 @@ const Login = () => {
             placeholder="username"
           />
           <Label for="password">Password</Label>
-          <Input type="password" name="password" id="password" />
+          <Input
+            type="password"
+            name="password"
+            id="password"
+            placeholder="password"
+          />
         </FormGroup>
         <Button color="primary" size="lg" block>
           Login

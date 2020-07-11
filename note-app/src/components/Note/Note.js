@@ -14,7 +14,7 @@ const Note = (props) => {
         onClick={(e) => props.removeNote(e, props.id)}
       >
         <CardBody>
-          <CardTitle className={classes.CardTitle}>{props.title}</CardTitle>
+          <CardTitle className={classes.CardTitle}>{props.title}tt</CardTitle>
           <CardText className={classes.CardText}>
             {props.text} " " {props.id}
           </CardText>

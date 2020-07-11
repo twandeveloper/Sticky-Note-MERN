@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useReducer, useCallback } from "react";
 
 import { BrowserRouter as Router, Route } from "react-router-dom";
 import axios from "axios";
@@ -12,14 +12,48 @@ import Navigation from "../../UI/Nav/Navigation";
 
 import classes from "./Desk.module.css";
 
-const Desk = () => {
-  const [notes, setNotes] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+const ACTIONS = {
+  ADD_NOTE: "add-note",
+};
 
-  useEffect(() => {
-    getNotes();
-  }, []);
+const reducer = (notess, action) => {
+  switch (action.type) {
+    case ACTIONS.ADD_NOTE:
+      console.log("added");
+
+      axios.post("/addNote", {
+        title: action.payload.title,
+        text: action.payload.text,
+      });
+      return [...notess, newNote(action.payload.text, action.payload.title)];
+
+    default:
+      break;
+  }
+};
+
+const newNote = (text, title) => {
+  return { text: text, title: title };
+};
+
+const Desk = () => {
+  const [notess, dispatch] = useReducer(reducer, []);
+  const [text, setText] = useState("");
+  const [title, setTitle] = useState("");
+  // const [notes, setNotes] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+
+  // useEffect(() => {
+  //   getNotes();
+  // }, []);
+
+  const reduceNotes = (e) => {
+    e.preventDefault();
+    dispatch({ type: ACTIONS.ADD_NOTE, payload: { text: text, title: title } });
+    setText("");
+  };
+  console.log(notess);
 
   const getNotes = async () => {
     try {
@@ -27,49 +61,49 @@ const Desk = () => {
       const newNotes = res.data;
       console.log(newNotes);
 
-      setNotes(newNotes);
-      setIsLoading(false);
+      // setNotes(newNotes);
+      // setIsLoading(false);
     } catch (error) {
       console.error(error);
     }
   };
 
-  let noteTitle = "";
-  let noteText = "";
+  // let noteTitle = "";
+  // let noteText = "";
 
   //Adds new note to notes array
-  const addNoteHandler = (e) => {
-    if (noteTitle && noteText) {
-      e.preventDefault();
+  // const addNoteHandler = (e) => {
+  //   if (noteTitle && noteText) {
+  //     e.preventDefault();
 
-      axios.post("/addNote", {
-        title: noteTitle,
-        text: noteText,
-      });
-      getNotes();
-      toggleModalHandler();
-    } else {
-      return;
-    }
-  };
+  //     axios.post("/addNote", {
+  //       title: noteTitle,
+  //       text: noteText,
+  //     });
+  //     getNotes();
+  //     toggleModalHandler();
+  //   } else {
+  //     return;
+  //   }
+  // };
 
-  const removeNoteHandler = (e, noteId) => {
-    if (noteId) {
-      const requestOptions = {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: noteId,
-        }),
-      };
-      fetch("/removeNote", requestOptions).then((res) => res.json());
+  // const removeNoteHandler = (e, noteId) => {
+  //   if (noteId) {
+  //     const requestOptions = {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         id: noteId,
+  //       }),
+  //     };
+  //     fetch("/removeNote", requestOptions).then((res) => res.json());
 
-      e.preventDefault();
-      getNotes();
-    } else {
-      return;
-    }
-  };
+  //     e.preventDefault();
+  //     getNotes();
+  //   } else {
+  //     return;
+  //   }
+  // };
 
   const toggleModalHandler = () => {
     setShowModal(!showModal);
@@ -77,21 +111,21 @@ const Desk = () => {
   };
 
   const noteDataHandler = (e) => {
-    noteText = e.target.value;
+    // noteText = e.target.value;
+    setText(e.target.value);
   };
 
   const noteTitleHandler = (e) => {
-    noteTitle = e.target.value;
+    setTitle(e.target.value);
   };
 
-  const stickyNotes = notes.map((note) => (
+  const stickyNotes = notess.map((note) => (
     <Notes
-      loading={isLoading}
-      key={note._id}
-      id={note._id}
-      text={note.noteText}
-      title={note.noteTitle}
-      removeNote={(e) => removeNoteHandler(e, note._id)}
+    // key={note._id}
+    // id={note._id}
+    // text={note.noteText}
+    // title={note.noteTitle}
+    // removeNote={(e) => removeNoteHandler(e, note._id)}
     />
   ));
 
@@ -101,9 +135,10 @@ const Desk = () => {
       toggleModal={toggleModalHandler}
       changeTitle={noteTitleHandler}
       changeNote={noteDataHandler}
-      addNote={addNoteHandler}
-      title={notes.noteTitle}
-      note={notes.noteText}
+      // addNote={addNoteHandler}
+      addNote={reduceNotes}
+      // title={notes.noteTitle}
+      // note={notes.noteText}
     />
   );
 
