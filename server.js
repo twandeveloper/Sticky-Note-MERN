@@ -54,6 +54,7 @@ app.post("/removeNote", (req, res) => {
 
   Notes.findByIdAndDelete(id)
     .then(console.log("item delelte"))
+    .then((id) => res.json(id))
     .catch((err) => {
       console.log(err);
     });

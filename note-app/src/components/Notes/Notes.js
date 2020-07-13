@@ -3,9 +3,14 @@ import React from "react";
 import Note from "./Note/Note";
 import classes from "./Notes.module.css";
 
-function Notes({ notes }) {
+function Notes({ notes, removeNote }) {
   const note = notes.map((note) => (
-    <Note title={note.noteTitle} text={note.noteText} />
+    <Note
+      title={note.noteTitle}
+      text={note.noteText}
+      id={note._id}
+      removeNote={removeNote}
+    />
   ));
 
   return <section className={classes.Notes}>{note}</section>;

@@ -1,4 +1,6 @@
 .Note {
+  font-family: "Roboto", sans-serif;
+  font-weight: 500;
   min-width: 250px;
   max-height: 350px;
   margin: 0 auto;
@@ -11,6 +13,10 @@
 .title {
   text-align: center;
   width: 100%;
-  margin: 25px auto;
+  margin: 85px auto;
   font-size: larger;
+}
+
+.text {
+  text-align: center;
 }

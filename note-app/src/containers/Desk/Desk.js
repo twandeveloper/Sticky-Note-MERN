@@ -11,8 +11,6 @@ import Navigation from "../../UI/Nav/Navigation";
 
 import classes from "./Desk.module.css";
 
-// import notes from "../../../../notes";
-
 const initialState = {
   notes: [],
 };
@@ -93,40 +91,24 @@ const Desk = () => {
     }
   };
 
-  // let noteTitle = "";
-  // let noteText = "";
-
-  //Adds new note to notes array
-  // const addNoteHandler = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     const res = await axios.post("/addnote", {
-  //       noteTitle: "Note 5",
-  //       noteText: "Hello",
-  //     });
-  //     console.log(res.data);
-  //     dispatch({ type: ACTIONS.ADD_NOTE, payload: res.data });
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // };
-
-  const removeNoteHandler = (e, noteId) => {
-    if (noteId) {
-      const requestOptions = {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+  const removeNoteHandler = async (e, noteId) => {
+    e.preventDefault();
+    try {
+      const res = await axios
+        .post("/removeNote", {
           id: noteId,
-        }),
-      };
-      fetch("/removeNote", requestOptions).then((res) => res.json());
-
-      e.preventDefault();
-      getNotes();
-    } else {
-      return;
+        })
+        .then((res) => {
+          console.log(res.data);
+          getNotes();
+          dispatch({ type: ACTIONS.DELETE_NOTE });
+        });
+    } catch (err) {
+      console.log(err);
     }
+
+    console.log("removed", e);
+    console.log(noteId);
   };
 
   const toggleModalHandler = () => {
@@ -166,7 +148,7 @@ const Desk = () => {
           </Route>
           <Route path="/login" component={Login} />
           <Route path="/notes">
-            <Notes notes={state.notes} />
+            <Notes notes={state.notes} removeNote={removeNoteHandler} />
             {/* {isLoading ? "loading" : stickyNotes} */}
 
             {modalForm}
