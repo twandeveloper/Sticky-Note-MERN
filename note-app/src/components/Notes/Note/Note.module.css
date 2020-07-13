@@ -1,0 +1,16 @@
+.Note {
+  min-width: 250px;
+  max-height: 350px;
+  margin: 0 auto;
+  border: 1px solid black;
+  border-radius: 5px;
+  background-color: #4381c1;
+  box-shadow: 7px 13px 30px -1px rgba(0, 0, 0, 0.75);
+}
+
+.title {
+  text-align: center;
+  width: 100%;
+  margin: 25px auto;
+  font-size: larger;
+}

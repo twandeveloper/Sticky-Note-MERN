@@ -1,68 +1,93 @@
-import React, { useState, useEffect, useReducer, useCallback } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 
 import { BrowserRouter as Router, Route } from "react-router-dom";
 import axios from "axios";
-import { Row } from "reactstrap";
 
 import Button from "../../UI/Button/AddButton";
 import Modal from "../../UI/Modal/FormModal";
 import Login from "../../components/Login/Login";
-import Notes from "../../components/Note/Note";
+import Notes from "../../components/Notes/Notes";
 import Navigation from "../../UI/Nav/Navigation";
 
 import classes from "./Desk.module.css";
 
-const ACTIONS = {
-  ADD_NOTE: "add-note",
+// import notes from "../../../../notes";
+
+const initialState = {
+  notes: [],
 };
 
-const reducer = (notess, action) => {
+const ACTIONS = {
+  GET_SUCCESS: "get-success",
+  ADD_NOTE: "add-note",
+  DELETE_NOTE: "delete-note",
+};
+
+const noteReducer = (state = initialState, action) => {
   switch (action.type) {
+    case ACTIONS.GET_SUCCESS:
+      console.log("success");
+
+      return {
+        notes: action.payload,
+      };
+
     case ACTIONS.ADD_NOTE:
       console.log("added");
-
-      axios.post("/addNote", {
-        title: action.payload.title,
-        text: action.payload.text,
-      });
-      return [...notess, newNote(action.payload.text, action.payload.title)];
-
+      return {
+        ...state,
+        notes: [...state.notes, action.payload],
+      };
+    case ACTIONS.DELETE_NOTE:
+      console.log("delete");
+      return state;
     default:
       break;
   }
 };
 
-const newNote = (text, title) => {
-  return { text: text, title: title };
-};
+// const newNote = (text, title) => {
+//   return { text: text, title: title };
+// };
 
 const Desk = () => {
-  const [notess, dispatch] = useReducer(reducer, []);
+  const [state, dispatch] = useReducer(noteReducer, initialState);
+  const [isLoading, setIsLoading] = useState(true);
   const [text, setText] = useState("");
   const [title, setTitle] = useState("");
   // const [notes, setNotes] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
-  // useEffect(() => {
-  //   getNotes();
-  // }, []);
+  useEffect(() => {
+    getNotes();
+  }, []);
 
-  const reduceNotes = (e) => {
+  const addNote = async (e) => {
     e.preventDefault();
-    dispatch({ type: ACTIONS.ADD_NOTE, payload: { text: text, title: title } });
-    setText("");
+    try {
+      const res = await axios
+        .post("/addNote", {
+          title: title,
+          text: text,
+        })
+        .then((res) => {
+          console.log(res.data);
+          dispatch({ type: ACTIONS.ADD_NOTE, payload: res.data });
+        });
+    } catch (err) {
+      console.log(err);
+    }
+    // getNotes();
   };
-  console.log(notess);
+
+  // console.log(state.notes[2]);
 
   const getNotes = async () => {
     try {
       const res = await axios.get("/user/notes");
-      const newNotes = res.data;
-      console.log(newNotes);
-
-      // setNotes(newNotes);
-      // setIsLoading(false);
+      dispatch({ type: ACTIONS.GET_SUCCESS, payload: res.data });
+      setIsLoading(false);
+      console.log(res.data);
     } catch (error) {
       console.error(error);
     }
@@ -72,38 +97,37 @@ const Desk = () => {
   // let noteText = "";
 
   //Adds new note to notes array
-  // const addNoteHandler = (e) => {
-  //   if (noteTitle && noteText) {
-  //     e.preventDefault();
-
-  //     axios.post("/addNote", {
-  //       title: noteTitle,
-  //       text: noteText,
+  // const addNoteHandler = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const res = await axios.post("/addnote", {
+  //       noteTitle: "Note 5",
+  //       noteText: "Hello",
   //     });
-  //     getNotes();
-  //     toggleModalHandler();
-  //   } else {
-  //     return;
+  //     console.log(res.data);
+  //     dispatch({ type: ACTIONS.ADD_NOTE, payload: res.data });
+  //   } catch (err) {
+  //     console.log(err);
   //   }
   // };
 
-  // const removeNoteHandler = (e, noteId) => {
-  //   if (noteId) {
-  //     const requestOptions = {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         id: noteId,
-  //       }),
-  //     };
-  //     fetch("/removeNote", requestOptions).then((res) => res.json());
+  const removeNoteHandler = (e, noteId) => {
+    if (noteId) {
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: noteId,
+        }),
+      };
+      fetch("/removeNote", requestOptions).then((res) => res.json());
 
-  //     e.preventDefault();
-  //     getNotes();
-  //   } else {
-  //     return;
-  //   }
-  // };
+      e.preventDefault();
+      getNotes();
+    } else {
+      return;
+    }
+  };
 
   const toggleModalHandler = () => {
     setShowModal(!showModal);
@@ -119,16 +143,6 @@ const Desk = () => {
     setTitle(e.target.value);
   };
 
-  const stickyNotes = notess.map((note) => (
-    <Notes
-    // key={note._id}
-    // id={note._id}
-    // text={note.noteText}
-    // title={note.noteTitle}
-    // removeNote={(e) => removeNoteHandler(e, note._id)}
-    />
-  ));
-
   const modalForm = (
     <Modal
       openModal={showModal}
@@ -136,7 +150,7 @@ const Desk = () => {
       changeTitle={noteTitleHandler}
       changeNote={noteDataHandler}
       // addNote={addNoteHandler}
-      addNote={reduceNotes}
+      addNote={addNote}
       // title={notes.noteTitle}
       // note={notes.noteText}
     />
@@ -152,7 +166,9 @@ const Desk = () => {
           </Route>
           <Route path="/login" component={Login} />
           <Route path="/notes">
-            <Row>{stickyNotes}</Row>
+            <Notes notes={state.notes} />
+            {/* {isLoading ? "loading" : stickyNotes} */}
+
             {modalForm}
             <Button addNote={toggleModalHandler} />
           </Route>

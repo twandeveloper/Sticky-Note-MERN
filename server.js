@@ -42,7 +42,10 @@ app.post("/addNote", (req, res) => {
     noteTitle: req.body.title,
     noteText: req.body.text,
   });
-  note.save().catch((err) => console.log(err));
+  note
+    .save()
+    .then((note) => res.json(note))
+    .catch((err) => console.log(err));
 });
 
 app.post("/removeNote", (req, res) => {
