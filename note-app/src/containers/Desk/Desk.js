@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useReducer } from "react";
+import * as actionTypes from "../../actions/actionTypes";
 
 import { BrowserRouter as Router, Route } from "react-router-dom";
 import axios from "axios";
@@ -15,28 +16,22 @@ const initialState = {
   notes: [],
 };
 
-const ACTIONS = {
-  GET_SUCCESS: "get-success",
-  ADD_NOTE: "add-note",
-  DELETE_NOTE: "delete-note",
-};
-
 const noteReducer = (state = initialState, action) => {
   switch (action.type) {
-    case ACTIONS.GET_SUCCESS:
+    case actionTypes.GET_SUCCESS:
       console.log("success");
 
       return {
         notes: action.payload,
       };
 
-    case ACTIONS.ADD_NOTE:
+    case actionTypes.ADD_NOTE:
       console.log("added");
       return {
         ...state,
         notes: [...state.notes, action.payload],
       };
-    case ACTIONS.DELETE_NOTE:
+    case actionTypes.DELETE_NOTE:
       console.log("delete");
       return state;
     default:
@@ -44,16 +39,11 @@ const noteReducer = (state = initialState, action) => {
   }
 };
 
-// const newNote = (text, title) => {
-//   return { text: text, title: title };
-// };
-
 const Desk = () => {
   const [state, dispatch] = useReducer(noteReducer, initialState);
   const [isLoading, setIsLoading] = useState(true);
   const [text, setText] = useState("");
   const [title, setTitle] = useState("");
-  // const [notes, setNotes] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -70,20 +60,19 @@ const Desk = () => {
         })
         .then((res) => {
           console.log(res.data);
-          dispatch({ type: ACTIONS.ADD_NOTE, payload: res.data });
+          setShowModal(false);
+          dispatch({ type: actionTypes.ADD_NOTE, payload: res.data });
         });
     } catch (err) {
       console.log(err);
     }
-    // getNotes();
   };
 
-  // console.log(state.notes[2]);
-
+  // sends request to backend to get all notes
   const getNotes = async () => {
     try {
       const res = await axios.get("/user/notes");
-      dispatch({ type: ACTIONS.GET_SUCCESS, payload: res.data });
+      dispatch({ type: actionTypes.GET_SUCCESS, payload: res.data });
       setIsLoading(false);
       console.log(res.data);
     } catch (error) {
@@ -101,14 +90,11 @@ const Desk = () => {
         .then((res) => {
           console.log(res.data);
           getNotes();
-          dispatch({ type: ACTIONS.DELETE_NOTE });
+          dispatch({ type: actionTypes.DELETE_NOTE });
         });
     } catch (err) {
       console.log(err);
     }
-
-    console.log("removed", e);
-    console.log(noteId);
   };
 
   const toggleModalHandler = () => {
@@ -117,7 +103,6 @@ const Desk = () => {
   };
 
   const noteDataHandler = (e) => {
-    // noteText = e.target.value;
     setText(e.target.value);
   };
 
@@ -148,8 +133,11 @@ const Desk = () => {
           </Route>
           <Route path="/login" component={Login} />
           <Route path="/notes">
-            <Notes notes={state.notes} removeNote={removeNoteHandler} />
-            {/* {isLoading ? "loading" : stickyNotes} */}
+            {isLoading ? (
+              <h1>Notes are loading</h1>
+            ) : (
+              <Notes notes={state.notes} removeNote={removeNoteHandler} />
+            )}
 
             {modalForm}
             <Button addNote={toggleModalHandler} />
